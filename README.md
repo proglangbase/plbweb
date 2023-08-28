@@ -7,4 +7,5 @@ proglangbase website
 - BEAM
   1. Erlang (WIP)
   2. Elixir (TODO)
-  3. LFE (TODO)
+  3. Gleam (TODO)
+  4. LFE (TODO)
