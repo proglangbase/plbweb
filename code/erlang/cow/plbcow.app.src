@@ -1,0 +1,9 @@
+{application, 'proglangbase', [
+    {description, "proglangbase website"},
+    {vsn, "1"},
+    {modules, ['plbcowdirhand','plbcowdirlist','plbcowapp','plbcowsup']},
+    {registered, [plbcowsup]},
+    {applications, [kernel,stdlib,cowboy,jsx]},
+    {mod, {plbcowapp, []}},
+    {env, []}
+]}.
