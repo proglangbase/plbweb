@@ -1,0 +1,3 @@
+[submodule "mod/cowboy"]
+	path = mod/cowboy
+	url = git@github.com:proglangbase/cowboy
