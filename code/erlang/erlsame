@@ -1,0 +1,28 @@
+#!/bin/sh
+#
+#   Copyright © 2023 Christopher Augustus
+#
+#   This Source Code Form is subject to the terms of the Mozilla Public
+#   License, v. 2.0. If a copy of the MPL was not distributed with this
+#   file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+if [ $# -lt 1 ]
+then
+  echo Attach or start a distributed Erlang node with the same name.
+  echo Usage: "$0 <sname> [start args]"
+  exit 1
+fi
+if ! epmd -daemon; then
+  exit 1
+fi
+NAMES=$(epmd -names)
+NAMESONELINE="${NAMES//$'\n'/ }"
+NAMEFILTER="name $1 at port"
+NAMESFILTERED=${NAMESONELINE/$NAMEFILTER/}
+if [ "$NAMESONELINE" == "$NAMESFILTERED" ]; then
+  echo "Starting new detached Erlang node named \"$1\"."
+  erl -detached -sname $@
+else
+  echo "Attaching to existing Erlang node named \"$1\"."
+fi
+erl -remsh $1
