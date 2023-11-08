@@ -1,2 +1,3 @@
 #!/bin/sh
-${0%/*}/erlsame plbweb -eval "make:all(), application:ensure_all_started(plbweb)"
+#${0%/*}/erlsame plbweb -eval "make:all(), application:ensure_all_started(plbweb)"
+${0%/*}/erlsame plbweb -eval "make:all()"
