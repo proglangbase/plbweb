@@ -18,11 +18,13 @@ acquire() ->
 init() ->
   ok = application:ensure_started(inets),
   {ok, PidHttpd} = inets:start(httpd, [
-    {server_name,   "proglangbase.org" },
-    {server_root,   "."                },
-    {document_root, "."                },
-    {bind_address,  "localhost"        },
-    {port,          8088               }
+    {server_name,     "proglangbase.org"   },
+    {server_root,     "."                  },
+    {document_root,   "."                  },
+    {bind_address,    "localhost"          },
+    {port,            8088                 },
+    {modules,         [mod_alias, mod_get] },
+    {directory_index, ["index.html"]       }
   ]),
   register(?PROCESS, self()),
   receive
