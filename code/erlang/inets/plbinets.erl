@@ -10,24 +10,24 @@
 -define(PROCESS, list_to_atom(atom_to_list(?MODULE) ++ "_single")).
 
 acquire() ->
-  case whereis(?PROCESS) of
-    Pid when is_pid(Pid) -> Pid;
-    _ -> spawn(?MODULE, init, [])
-  end.
+    case whereis(?PROCESS) of
+        Pid when is_pid(Pid) -> Pid;
+        _ -> spawn(?MODULE, init, [])
+    end.
 
 init() ->
-  ok = application:ensure_started(inets),
-  {ok, PidHttpd} = inets:start(httpd, [
-    {server_name,     "proglangbase.org"   },
-    {server_root,     "."                  },
-    {document_root,   "."                  },
-    {bind_address,    "localhost"          },
-    {port,            8088                 },
-    {modules,         [mod_alias, mod_get] },
-    {directory_index, ["index.html"]       }
-  ]),
-  register(?PROCESS, self()),
-  receive
-    stop -> inets:stop(httpd, PidHttpd), ok;
-    stop_inets -> inets:stop(), ok
-  end.
+    ok = application:ensure_started(inets),
+    {ok, PidHttpd} = inets:start(httpd, [
+        {server_name,     "proglangbase.org"    },
+        {server_root,     "."                   },
+        {document_root,   "."                   },
+        {bind_address,    "localhost"           },
+        {port,            8088                  },
+        {modules,         [mod_alias, mod_get]  },
+        {directory_index, ["index.html"]        }
+    ]),
+    register(?PROCESS, self()),
+    receive
+        stop        -> inets:stop(httpd, PidHttpd), ok;
+        stop_inets  -> inets:stop(), ok
+    end.
