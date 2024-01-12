@@ -7,10 +7,10 @@
 %%
 -module(plbinets).
 -export([acquire/0, init/0]).
--define(PROCESS, list_to_atom(atom_to_list(?MODULE) ++ "_single")).
+-define(NAME_SINGLETON, list_to_atom(atom_to_list(?MODULE) ++ "_single")).
 
 acquire() ->
-    case whereis(?PROCESS) of
+    case whereis(?NAME_SINGLETON) of
         Pid when is_pid(Pid) -> Pid;
         _ -> spawn(?MODULE, init, [])
     end.
@@ -26,7 +26,7 @@ init() ->
         {modules,         [mod_alias, mod_get]  },
         {directory_index, ["index.html"]        }
     ]),
-    register(?PROCESS, self()),
+    register(?NAME_SINGLETON, self()),
     receive
         stop        -> inets:stop(httpd, PidHttpd), ok;
         stop_inets  -> inets:stop(), ok
