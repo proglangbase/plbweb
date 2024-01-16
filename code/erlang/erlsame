@@ -1,28 +1,57 @@
-#!/bin/sh
-#
-#   Copyright © 2023 Christopher Augustus
-#
-#   This Source Code Form is subject to the terms of the Mozilla Public
-#   License, v. 2.0. If a copy of the MPL was not distributed with this
-#   file, You can obtain one at http://mozilla.org/MPL/2.0/.
-#
-if [ $# -lt 1 ]
-then
-  echo Attach or start a distributed Erlang node with the same name.
-  echo Usage: "$0 <sname> [start args]"
-  exit 1
-fi
-if ! epmd -daemon; then
-  exit 1
-fi
-NAMES=$(epmd -names)
-NAMESONELINE="${NAMES//$'\n'/ }"
-NAMEFILTER="name $1 at port"
-NAMESFILTERED=${NAMESONELINE/$NAMEFILTER/}
-if [ "$NAMESONELINE" == "$NAMESFILTERED" ]; then
-  echo "Starting new detached Erlang node named \"$1\"."
-  erl -detached -sname $@
-else
-  echo "Attaching to existing Erlang node named \"$1\"."
-fi
-erl -remsh $1
+#!/usr/bin/env escript
+%% -*- erlang -*-
+%%! -sname undefined
+%%
+%%  Copyright © 2023 Christopher Augustus
+%%
+%%  This Source Code Form is subject to the terms of the Mozilla Public
+%%  License, v. 2.0. If a copy of the MPL was not distributed with this
+%%  file, You can obtain one at http://mozilla.org/MPL/2.0/.
+%%
+main(Args) ->
+    case (EpmdDaemon = os:cmd("epmd -daemon")) of
+        [] -> [];
+        _  -> io:fwrite("Failed starting epmd: ~p", [EpmdDaemon]), halt(1)
+    end,
+    EpmdNames = os:cmd("epmd -names"),
+    case Args of
+        [] ->
+            io:fwrite(
+                "Attach or start a distributed Erlang node with the same name.\n"
+                "Usage: " ++ escript:script_name() ++ " <sname> [start args]\n"
+                ++ EpmdNames),
+            halt(1);
+        ([Sname|_]) ->
+            NodeDesc = "Erlang node named \"" ++ Sname ++ "\".\n",
+            case re:run(EpmdNames, "name " ++ Sname ++ " at port") of
+                nomatch ->
+                    ArgsQuoted = lists:map(
+                        fun(Arg) -> %%
+                            case re:run(Arg, "'+") of
+                                nomatch -> "'"  ++ Arg ++ "'";
+                                _       -> "\"" ++ Arg ++ "\""
+                            end
+                        end,
+                        Args),
+                    ArgsFlat = lists:flatten(lists:join(" ", ArgsQuoted)),
+                    %%%io:fwrite("## ArgsFlat: ~p~n", [ArgsFlat]),
+                    io:fwrite("Starting new detached " ++ NodeDesc),
+                    io:fwrite(os:cmd("erl -detached -sname " ++ ArgsFlat)),
+                    %%% TODO: @@@ ALTERNATIVE TO BYPASS USING sh BUT IT DOESN'T WORK
+                    %%%open_port(
+                    %%%    {spawn_executable, os:find_executable("erl")},
+                    %%%    [{args, ["-detached -sname " ++ Sname]}]),
+                    % TODO: ### MUST DELAY OR WE STALL BELOW ON shell:start_interactive({remote, Sname}),
+                    io:fwrite("### Delaying before interaction"),
+                    lists:foreach(
+                        fun(X) -> timer:sleep(100), io:fwrite(".~B", [X]) end,
+                        lists:seq(9, 1, -1)),
+                    io:fwrite("~n");
+                {match, _} ->
+                    io:fwrite("Attaching to existing " ++ NodeDesc)
+            end,
+            shell:start_interactive({remote, Sname}),
+            receive
+                stop -> halt(0)
+            end
+    end.
