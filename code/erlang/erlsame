@@ -2,12 +2,14 @@
 %% -*- erlang -*-
 %%! -sname undefined
 %%
-%%  Copyright © 2023 Christopher Augustus
+%%  Copyright © 2023 - 2024 Christopher Augustus
 %%
 %%  This Source Code Form is subject to the terms of the Mozilla Public
 %%  License, v. 2.0. If a copy of the MPL was not distributed with this
 %%  file, You can obtain one at http://mozilla.org/MPL/2.0/.
 %%
+-mode(compile).
+
 main(Args) ->
     case (EpmdDaemon = os:cmd("epmd -daemon")) of
         [] -> [];
@@ -18,25 +20,34 @@ main(Args) ->
         [] ->
             io:fwrite(
                 "Attach or start a distributed Erlang node with the same name.\n"
-                "Usage: " ++ escript:script_name() ++ " <sname> [start args]\n"
+                "Usage: " ++ escript:script_name() ++ " <sname> [start args] ['posteval:<source>']*\n"
                 ++ EpmdNames),
             halt(1);
-        ([Sname|_]) ->
+        ([Sname|ArgsMore]) ->
+            {ArgsPostEval, ArgsOther} = lists:splitwith(
+                fun(Arg) -> % TODO: @@@ MAKE THIS MORE CONCISE
+                    case re:run(Arg, "posteval:(.+)", []) of
+                        {match, _} -> true; _ -> false
+                    end
+                end,
+                ArgsMore),
+            %%%io:fwrite("## ArgsPostEval: ~p~n", [ArgsPostEval]),
+            %%%io:fwrite("## ArgsOther: ~p~n", [ArgsOther]),
+            PostEvals = lists:map(
+                fun(Arg) ->
+                    case re:run(Arg, "posteval:(.+)", [{capture, all_but_first, list}]) of
+                        {match, Captured} -> lists:nth(1, Captured); _ -> ""
+                    end
+                end,
+                ArgsPostEval),
+            %%%io:fwrite("## PostEvals: ~p~n", [PostEvals]),
             NodeDesc = "Erlang node named \"" ++ Sname ++ "\".\n",
             case re:run(EpmdNames, "name " ++ Sname ++ " at port") of
                 nomatch ->
-                    ArgsQuoted = lists:map(
-                        fun(Arg) -> %%
-                            case re:run(Arg, "'+") of
-                                nomatch -> "'"  ++ Arg ++ "'";
-                                _       -> "\"" ++ Arg ++ "\""
-                            end
-                        end,
-                        Args),
-                    ArgsFlat = lists:flatten(lists:join(" ", ArgsQuoted)),
-                    %%%io:fwrite("## ArgsFlat: ~p~n", [ArgsFlat]),
                     io:fwrite("Starting new detached " ++ NodeDesc),
-                    io:fwrite(os:cmd("erl -detached -sname " ++ ArgsFlat)),
+                    io:fwrite(os:cmd("erl -detached -sname " ++ Sname
+                        ++ " " ++ lists:flatten(lists:join(" ", ArgsOther)))),
+                        %%% TODO: ### INVALID erl ARGS WILL JUST CAUSE US TO STALL
                     %%% TODO: @@@ ALTERNATIVE TO BYPASS USING sh BUT IT DOESN'T WORK
                     %%%open_port(
                     %%%    {spawn_executable, os:find_executable("erl")},
@@ -44,13 +55,37 @@ main(Args) ->
                     % TODO: ### MUST DELAY OR WE STALL BELOW ON shell:start_interactive({remote, Sname}),
                     io:fwrite("### Delaying before interaction"),
                     lists:foreach(
-                        fun(X) -> timer:sleep(100), io:fwrite(".~B", [X]) end,
+                        fun(X) -> timer:sleep(200), io:fwrite(".~B", [X]) end,
                         lists:seq(9, 1, -1)),
                     io:fwrite("~n");
                 {match, _} ->
                     io:fwrite("Attaching to existing " ++ NodeDesc)
             end,
             shell:start_interactive({remote, Sname}),
+            case PostEvals of [] -> []; _ ->
+                {ok, HostName} = inet:gethostname(),
+                NodeRemote = list_to_atom(Sname ++ "@" ++ HostName),
+                case net_kernel:connect_node(NodeRemote) of
+                    false -> io:fwrite("Failed to connect to remote node ~p~n.", [NodeRemote]);
+                    true -> % send companion library module to remote node and execute postevals there
+                        FileLib = code:which(?MODULE) ++ "lib.erl",
+                        case compile:file(FileLib, [binary]) of
+                            error -> io:fwrite("Failed to compile ~p~n", [FileLib]);
+                            {ok, ModLib, BinLib} ->
+                                case erpc:call(NodeRemote, code, load_binary, [ModLib, FileLib, BinLib]) of
+                                    {error, What } -> io:fwrite("Failed to load code on remote node: ~p~n", [What]);
+                                    {module, ModRem} -> lists:foreach(
+                                        fun (Source) ->
+                                            case rpc:call(NodeRemote, ModRem, posteval, [Source], 100) of
+                                                {badrpc, Reason} -> io:fwrite("Failed to call remote node: ~p~n", [Reason]);
+                                                _ -> [] % ignore successful result
+                                            end
+                                        end,
+                                        PostEvals)
+                                end
+                        end
+                end
+            end,
             receive
                 stop -> halt(0)
             end
