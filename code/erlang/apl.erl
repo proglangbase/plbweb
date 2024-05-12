@@ -29,12 +29,12 @@ trimr(S, T) -> string:left(S, rstr_or_len(S, T)).
 %trimr(S, T) -> comb_s(fun string:left/2, fun (SS) -> rstr_or_len(SS, T) end, S).
 
 init() ->
-    AplSrcDir = string:chomp(os:cmd("apl --show_src_dir")),
-    %%io:fwrite("## APL src dir: ~p~n", [AplSrcDir]),
-    %% TODO: ### LD_LIBRARY_PATH MUST BE SET BEFORE BEAM IS LOADED, FOR libapl.so
-    %%os:putenv("LD_LIBRARY_PATH", AplSrcDir ++ "/.libs"),
-    AplDir = trimr(AplSrcDir, "/src"),
-    erlang:load_nif(AplDir ++ "/erlang/erlang_APL_nif", 0).
+  AplSrcDir = string:chomp(os:cmd("apl --show_src_dir")),
+  %%io:fwrite("## APL src dir: ~p~n", [AplSrcDir]),
+  %% TODO: ### LD_LIBRARY_PATH MUST BE SET BEFORE BEAM IS LOADED, FOR libapl.so
+  %%os:putenv("LD_LIBRARY_PATH", AplSrcDir ++ "/.libs"),
+  AplDir = trimr(AplSrcDir, "/src"),
+  erlang:load_nif(AplDir ++ "/erlang/erlang_APL_nif", 0).
 
 print_keyboard() -> io:fwrite(
 "╔════╦════╦════╦════╦════╦════╦════╦════╦════╦════╦════╦════╦════╦════════════╗\n" ++
@@ -54,15 +54,15 @@ print_keyboard() -> io:fwrite(
 "╚════════╩════╩════╩════╩════╩════╩════╩════╩════╩════╩════╩════╩═════════════╝").
 
 print_statement(S) ->
-    statement_ucs("⎕←'<-- " ++ S ++ "' ◊ 8 ⎕CR " ++ S).
+  statement_ucs("⎕←'<-- " ++ S ++ "' ◊ 8 ⎕CR " ++ S).
 
 test() ->
-    print_statement("⍳9"),
-    print_statement("+\\⍳9"),
-    print_statement("!¨⍳9"),
-    print_statement("3 3⍴⍳9"),
-    print_statement("+\\3 3⍴⍳9"),
-    print_statement("!¨3 3⍴⍳9"),
-    print_statement("3 3 3⍴⍳27"),
-    print_statement("+\\3 3 3⍴⍳27"),
-    print_statement("!¨3 3 3⍴⍳27").
+  print_statement("⍳9"),
+  print_statement("+\\⍳9"),
+  print_statement("!¨⍳9"),
+  print_statement("3 3⍴⍳9"),
+  print_statement("+\\3 3⍴⍳9"),
+  print_statement("!¨3 3⍴⍳9"),
+  print_statement("3 3 3⍴⍳27"),
+  print_statement("+\\3 3 3⍴⍳27"),
+  print_statement("!¨3 3 3⍴⍳27").
