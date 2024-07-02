@@ -1,3 +1,6 @@
 #!/bin/sh
-#${0%/*}/erlsame plbweb -eval "make:all(), application:ensure_all_started(plbweb)"
-LD_LIBRARY_PATH=$(apl --show_src_dir)/.libs ${0%/*}/erlsame plbweb 'posteval:make:all().' 'posteval:plbinets:acquire().'
+if [ "$(which apl)" != "" ]; then
+  export LD_LIBRARY_PATH=$(apl --show_src_dir)/.libs
+fi
+##${0%/*}/erlsame plbweb 'posteval:make:all().' 'posteval:application:ensure_all_started(plbweb).'
+${0%/*}/erlsame plbweb 'posteval:make:all().' 'posteval:plbinets:acquire().'
