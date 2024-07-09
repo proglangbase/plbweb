@@ -47,10 +47,14 @@ start(Addr, Port) ->
         ok = application:ensure_started(ssl),
         SocketType = {socket_type,
           {ssl,[{certfile,?FILE_CERT},{keyfile,?FILE_KEY}]}};
-      _ -> SocketType = {ip_comm}
+      _ -> SocketType = {ip_comm},
+          report("No HTTPS; missing cert files")
   end,
-  case file:make_dir(?HTTPD_SERVER_ROOT++"/"++?PATH_LOG) of
-    Good when Good == ok; Good == {error,eexist} -> ok; Bad -> ok = Bad
+  DirLog = ?HTTPD_SERVER_ROOT++"/"++?PATH_LOG,
+  case file:make_dir(DirLog) of
+    ok -> report("Made directory "++DirLog), ok;
+    {error,eexist} -> ok;
+    Bad -> ok = Bad
   end,
   ok = application:ensure_started(inets),
   {ok,PidHttpd} = inets:start(httpd, [
@@ -74,3 +78,7 @@ start(Addr, Port) ->
 
 do(_) -> %% ModData) -> {proceed, OldData} | {proceed, NewData} | {break, NewData} | done
   {break, [{response, {200, plbdb:home()}}]}.
+
+report(Info) ->
+  %% TODO: ### ALSO OUTPUT TO LOG FILE
+  io:fwrite(Info++".\n").
