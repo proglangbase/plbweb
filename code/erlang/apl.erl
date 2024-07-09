@@ -6,7 +6,7 @@
 %%  file, You can obtain one at http://mozilla.org/MPL/2.0/.
 %%
 -module(apl). %% note: this module name must match erlang_APL_nif.c
--export([init/0, print_keyboard/0, print_statement/1, test/0]).
+-export([init/0, print_keyboard/0, print_statement/1, statement_into_string/1, test/0]).
 
 % procedures defined in gnu-apl/erlang/erlang_APL_nif.c
 -export([command_ucs/1, command_utf8/1, eval_mux/5, fix_function_ucs/1,
@@ -34,7 +34,11 @@ init() ->
   %% TODO: ### LD_LIBRARY_PATH MUST BE SET BEFORE BEAM IS LOADED, FOR libapl.so
   %%os:putenv("LD_LIBRARY_PATH", AplSrcDir ++ "/.libs"),
   AplDir = trimr(AplSrcDir, "/src"),
-  erlang:load_nif(AplDir ++ "/erlang/erlang_APL_nif", 0).
+  case erlang:load_nif(AplDir ++ "/erlang/erlang_APL_nif", 0) of
+    {error,{reload ,_}} -> ok;
+    {error,{upgrade,_}} -> ok;
+    Result -> ok = Result
+  end.
 
 print_keyboard() -> io:fwrite(
 "╔════╦════╦════╦════╦════╦════╦════╦════╦════╦════╦════╦════╦════╦════════════╗\n" ++
@@ -55,6 +59,14 @@ print_keyboard() -> io:fwrite(
 
 print_statement(S) ->
   statement_ucs("⎕←'<-- " ++ S ++ "' ◊ 8 ⎕CR " ++ S).
+
+statement_into_string(S) ->
+  case statement_ucs(S) of
+    [{value,_,Ravel}] -> io_lib:format(
+        case io_lib:printable_list(Ravel) of true -> "~s"; false -> "~p" end,
+        [Ravel]);
+    Whatever -> io_lib:format("~p", [Whatever])
+  end.
 
 test() ->
   print_statement("⍳9"),
