@@ -56,6 +56,7 @@ start(Addr, Port) ->
     {error,eexist} -> ok;
     Bad -> ok = Bad
   end,
+  ok = plbdb:init(),
   ok = application:ensure_started(inets),
   {ok,PidHttpd} = inets:start(httpd, [
      {bind_address  ,Addr                       }
