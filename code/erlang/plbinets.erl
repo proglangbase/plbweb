@@ -76,8 +76,35 @@ start(Addr, Port) ->
     stop_inets  -> inets:stop(), ok
   end.
 
-do(_) -> %% ModData) -> {proceed, OldData} | {proceed, NewData} | {break, NewData} | done
-  {break, [{response, {200, plbdb:home()}}]}.
+do(ModData) -> %% {proceed, OldData} | {proceed, NewData} | {break, NewData} | done
+  Route = element(9, ModData),
+  %%io:fwrite("Route: ~p~n",[Route]),
+  %%io:fwrite("ModData: ~p~n",[ModData]),
+  case whereis(plbdb_single) of
+    Pid when is_pid(Pid) -> call_plbdb_html(Pid, Route);
+    _ -> break_response(200, plbdb:html(Route))
+  end.
+
+break_response(Code,Body) -> {break,[{response,{Code,Body}}]}.
+
+call_plbdb_html(Pid, Route) ->
+  %%io:fwrite("calling plbdb with Route: ~p~n",[Route]),
+  Ref = erlang:monitor(process, Pid),
+  Pid ! {html,Route,Ref,self()},
+  receive
+    {html,Html,Ref,Pid} ->
+      erlang:demonitor(Ref, [flush]),
+      break_response(200, Html);
+    {error_unknown_message,Msg} ->
+      erlang:demonitor(Ref, [flush]), % 502 Bad Gateway
+      break_response(502, io_lib:format("sent unknown message: ~p~n", [Msg]));
+    {'DOWN',Ref,process,Pid,Reason} -> % 503 Service Unavailable
+      break_response(503, io_lib:format("data service crashed: ~p~n", [Reason]));
+    Msg -> io:fwrite("unknown message: ~p~n", [Msg])
+  after 1000 ->
+    erlang:demonitor(Ref, [flush]), % 504 Gateway Timeout
+    break_response(504, "timed out waiting for data")
+  end.
 
 report(Info) ->
   %% TODO: ### ALSO OUTPUT TO LOG FILE

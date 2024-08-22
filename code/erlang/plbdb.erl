@@ -6,10 +6,10 @@
 %%  file, You can obtain one at http://mozilla.org/MPL/2.0/.
 %%
 -module(plbdb).
--export([home/0]).
+-export([html/1]).
 
-home() ->
-  "<!DOCtYPE html>"
+html(_) ->
+  "<!DOCTYPE html>"
   "<html>"
   "<head>"
   "  <title>proglangbase</title>"
