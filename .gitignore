@@ -3,3 +3,5 @@
 *.swp
 cert/
 log/
+*.dump
+*.LOG.*

@@ -8,12 +8,13 @@
 -module(plbinets).
 -export([acquire/0, create/1, do/1, init/1, start/2]).
 
--define(NAME_SINGLETON, list_to_atom(atom_to_list(?MODULE)++"_single")).
+-define(MODULE_PATH         , filename:dirname(proplists:get_value(source, module_info(compile)))).
+-define(NAME_SINGLETON      , list_to_atom(?MODULE_STRING++"_single")).
 -define(HTTPD_ADDR_LOCAL    , "localhost"                 ).
 -define(HTTPD_PORT_LOCAL    , 8088                        ).
 -define(HTTPD_PORT_PUBLIC   , 4433                        ).
--define(HTTPD_SERVER_ROOT   , "../.."                     ).
--define(HTTPD_DOCUMENT_ROOT , "."                         ).
+-define(HTTPD_SERVER_ROOT   , ?MODULE_PATH++"/../.."      ).
+-define(HTTPD_DOCUMENT_ROOT , ?MODULE_PATH++"/."          ).
 -define(PATH_CERT           , ?HTTPD_SERVER_ROOT++"/cert" ).
 -define(PATH_LOG            , "log"                       ).
 -define(FILE_CERT           , ?PATH_CERT++"/fullchain.pem").
