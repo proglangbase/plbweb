@@ -3,5 +3,6 @@
 *.swp
 cert/
 log/
+plbcom/
 *.dump
 *.LOG.*

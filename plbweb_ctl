@@ -1,0 +1,43 @@
+#!/usr/bin/env sh
+#
+# plbweb service controller. 
+#
+[ -z "$(command -v erl)" ]   && echo "Erlang/OTP not found in PATH." && exit 1
+(. plb_common); [ $? -ne 0 ] && echo "plb_common not found in PATH." && exit 1
+
+. plb_common
+
+  PATH_HERE="$(dirname $(readlink -e $0))"
+  NODE_NAME=plbweb     # Short name of Erlang node.
+MODULE_NAME=plbweb_run # Name of module to start the web server.
+MODULE_FILE="$PATH_HERE/$MODULE_NAME.erl" 
+
+case "$1" in 
+  start)
+    is_erl_node_running $NODE_NAME && echo "$NODE_NAME is already running" && exit 0
+    cd "$PATH_HERE"
+    erl_call -s -sname $NODE_NAME -m -a $MODULE_NAME -fetch_stdout -no_result_term < $MODULE_FILE
+    cd - > /dev/null
+    $0 status
+    ;;
+
+  stop)
+    is_erl_node_running $NODE_NAME && erl_call -sname $NODE_NAME -q
+    echo "$NODE_NAME is stopped"
+    ;;
+
+  restart)
+    is_erl_node_running $NODE_NAME && $0 stop
+    $0 start
+    ;;
+
+  status)
+    is_erl_node_running $NODE_NAME && echo "$NODE_NAME is running" && exit 0 
+    echo "$NODE_NAME is stopped"
+    ;;
+
+  *)
+    echo "Usage: plbweb {start|stop|restart|status}"
+    exit 1
+esac
+exit 0

@@ -1,0 +1,73 @@
+#
+# Checks the environment to see it is property configured for running plbweb. 
+# Must be sourced from the  working directory (`. ./setenv`). If not, the user
+# may opt to install the necessary tools, locally.
+#
+
+find_deps() {
+  unset NOTOOLS NOCOMMON
+  [ -z "$(command -v erl)" ]               && NOTOOLS=1
+  (. plb_common 2>/dev/null); [ $? -ne 0 ] && NOCOMMON=1
+  [ -z "$NOTOOLS$NOCOMMON" ] && return 0 || return 1
+}
+
+#*---------------------------------------------------*
+#* Return if all dependencies found in current PATH. *
+#*---------------------------------------------------*
+find_deps && return 0
+
+#*----------------------------------------*
+#* Modify PATH to include local tools and *
+#* local common folder and try, again.    *
+#*----------------------------------------*
+OLDPATH="$PATH"
+
+if [ -n "$NOTOOLS" ]; then
+  PATH_EXE="$(pwd)/_exe"
+  PATH_BIN="$PATH_EXE/_bin"
+  [ "${PATH#*":$PATH_BIN"}" = "$PATH" ] && PATH="$PATH:$PATH_BIN"
+fi
+
+if [ -n "$NOCOMMON" ]; then
+  PATH_COMBIN="$(pwd)/plbcom/bin/sh"
+  [ "${PATH#*":$PATH_COMBIN"}" = "$PATH" ] && PATH="$PATH:$PATH_COMBIN"
+fi
+
+#*------------------------------------------------*
+#* If still not found, let user install, locally. *
+#*------------------------------------------------*
+if ! find_deps; then
+  echo 'This will configure the environment to run the PLB web server'
+  echo 'with Erlang/OTP and `plbcom` installed locally, if necessary.'
+  echo 'PATH will be modified to include the local commands.'
+  echo
+  echo "Proceed (y/N)?"
+  read REPLY
+  if [ "$REPLY" = 'Y' -o "$REPLY" = 'y' ]; then
+    #*----------------------------------*
+    #* Clone plbcom, if necessary.      *
+    #* Common bin should then be found. *
+    #*----------------------------------*
+    if [ ! -d "./plbcom" ]; then
+      REPO_URL="git@gitlab.com:proglangbase/plbcom.git"
+      REPO_TAG="main"
+      git clone --depth 1 --branch $REPO_TAG $REPO_URL
+    fi
+
+    #*-----------------------------------------------------------------*
+    #* Add the local bin folder to PATH and install any missing tools. *
+    #*-----------------------------------------------------------------*
+    if [ -n "$NOTOOLS" ]; then
+      export PATH_EXE PATH_BIN PATH
+      [ -z "$(command -v erl)" ] && ./plbcom/code/sh/build-erlang-otp
+    fi
+
+  #*----------------------------------------------*
+  #* Restore the original PATH if not installing. *
+  #*----------------------------------------------*
+  else
+    PATH="$OLDPATH"
+  fi
+fi
+unset NOTOOLS NOCOMMON OLDPATH PATH_COMBIN REPLY 
+
