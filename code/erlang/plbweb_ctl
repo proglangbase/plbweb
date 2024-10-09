@@ -1,0 +1,48 @@
+#!/usr/bin/env escript
+-mode(compile).
+-include("../../plbcom/code/erlang/config.hrl").
+
+main([Cmd]) ->
+  make:all([{emake, ['../../plbcom/code/erlang/plb*', '*']}]),
+  try 
+    plb_ctl:init(?THIS_NODE),
+    case list_to_atom(string:lowercase(Cmd)) of
+      start   -> start();
+      stop    -> stop();
+      restart -> restart();
+      status  -> status();
+      _       -> main([])
+    end,
+    halt(0)
+  catch 
+    {error,  Info} -> plb_ctl:report(io_lib:format("error: ~p", [Info])),     halt(1);
+    {Source, Msg}  -> plb_ctl:report(io_lib:format("~p: ~s", [Source, Msg])), halt(1)
+  end;
+
+main(_) -> io:format("usage:~n", []).
+
+start() ->
+  case plb_ctl:start_node(?A_WEB_NODE_NAME, ?A_WEB_NODE_COOKIE) of
+    already_running ->
+      plb_ctl:report(?WEB_NODE_SNAME ++ " already running");
+    ok ->
+      plb_ctl:rpc(?A_WEB_NODE_NAME, plbweb, acquire, []),
+      status()
+  end.
+
+stop() ->
+  plb_ctl:stop_node(?A_WEB_NODE_NAME, ?A_WEB_NODE_COOKIE),
+  status().
+
+restart() ->
+  case plb_ctl:is_node_running(?A_WEB_NODE_NAME) of 
+    true -> stop(); 
+    _ -> ok 
+  end,
+  start().
+
+status() ->
+  case plb_ctl:is_node_running(?A_WEB_NODE_NAME) of 
+    true  -> plb_ctl:report(?WEB_NODE_SNAME ++ " is running");
+    false -> plb_ctl:report(?WEB_NODE_SNAME ++ " not running") 
+  end.
