@@ -5,14 +5,17 @@ proglangbase website
 *in a POSIX shell you can enter:*
 
 
-### `./plbweb_ctl`  
-  Used to start/stop the `plbweb` server. Like a standard Linux service script, 
-  it supports `start`, `stop`, `restart`, and `status` commands.
+### `code/erlang/plbweb_ctl`  
+  
+  - Used to start/stop the `plbweb` server. Builds any required out-of-date Erlang 
+    modules in the current folder and executes a command. Like a standard Linux 
+    service script, it supports `start`, `stop`, `restart`, and `status` commands.
+
   - Requires Erlang/OTP commands are found in PATH.
-  - Requires `plbcom/bin/sh` is found in PATH.
   - `. ./setenv` will install Erlang/OTP and `plbcom` locally, if necessary,
     and modify PATH accordingly.
      
+## Out of Date
 
 ### `./run`
   - requires Erlang/OTP `epmd` and `erl`

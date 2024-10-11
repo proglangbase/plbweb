@@ -2,11 +2,13 @@
 -mode(compile).
 -include("../../plbcom/code/erlang/config.hrl").
 
+-define(COM_PATH, ?MODULE_PATH ++ "/../../plbcom/code/erlang").
+
 main([Cmd]) ->
-  make:all([{emake, ['../../plbcom/code/erlang/plb*', '*']}]),
+  make:all([{emake, [?COM_PATH ++ "/plb*", ?MODULE_PATH++"/*"]}]),
   c:l(plb_com),
   try 
-    plb_ctl:init(?THIS_NODE),
+    plb_ctl:init(),
     case list_to_atom(string:lowercase(Cmd)) of
       start   -> start();
       stop    -> stop();

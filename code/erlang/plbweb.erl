@@ -13,8 +13,8 @@
 -define(HTTPD_ADDR_LOCAL,    "localhost").
 -define(HTTPD_PORT_LOCAL,    8088).
 -define(HTTPD_PORT_PUBLIC,   4433).
--define(HTTPD_SERVER_ROOT,   ?MODULE_PATH++"/../..").
--define(HTTPD_DOCUMENT_ROOT, ?MODULE_PATH++"/.").
+-define(HTTPD_SERVER_ROOT,   ?SOURCE_PATH++"/../..").
+-define(HTTPD_DOCUMENT_ROOT, ?SOURCE_PATH++"/.").
 -define(PATH_CERT,           ?HTTPD_SERVER_ROOT++"/cert").
 -define(PATH_LOG,            "log").
 -define(FILE_CERT,           ?PATH_CERT++"/fullchain.pem").

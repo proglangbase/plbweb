@@ -3,11 +3,19 @@
 # Must be sourced from the  working directory (`. ./setenv`). If not, the user
 # may opt to install the necessary tools, locally.
 #
+# Output: 
+#   PATH_EXE - Target folder for locally installed tools.
+#   PATH_BIN - Target folder for links to local tool commands.
+#   PATH     - Modified to include local tool commands.
+#
+# Note: Cmds for adding common shell commands to bin folder are commented out
+#       for now. If we become sure we don't want it, they should be removed.
+#
 
 find_deps() {
   unset NOTOOLS NOCOMMON
   [ -z "$(command -v erl)" ]               && NOTOOLS=1
-  (. plb_common 2>/dev/null); [ $? -ne 0 ] && NOCOMMON=1
+  # (. plb_common 2>/dev/null); [ $? -ne 0 ] && NOCOMMON=1
   [ -z "$NOTOOLS$NOCOMMON" ] && return 0 || return 1
 }
 
@@ -28,10 +36,10 @@ if [ -n "$NOTOOLS" ]; then
   [ "${PATH#*":$PATH_BIN"}" = "$PATH" ] && PATH="$PATH:$PATH_BIN"
 fi
 
-if [ -n "$NOCOMMON" ]; then
-  PATH_COMBIN="$(pwd)/plbcom/bin/sh"
-  [ "${PATH#*":$PATH_COMBIN"}" = "$PATH" ] && PATH="$PATH:$PATH_COMBIN"
-fi
+# if [ -n "$NOCOMMON" ]; then
+#   PATH_COMBIN="$(pwd)/plbcom/bin/sh"
+#   [ "${PATH#*":$PATH_COMBIN"}" = "$PATH" ] && PATH="$PATH:$PATH_COMBIN"
+# fi
 
 #*------------------------------------------------*
 #* If still not found, let user install, locally. *
@@ -48,11 +56,7 @@ if ! find_deps; then
     #* Clone plbcom, if necessary.      *
     #* Common bin should then be found. *
     #*----------------------------------*
-    if [ ! -d "./plbcom" ]; then
-      REPO_URL="git@gitlab.com:proglangbase/plbcom.git"
-      REPO_TAG="main"
-      git clone --depth 1 --branch $REPO_TAG $REPO_URL
-    fi
+    [ ! -d "plbcom/.git" ] && { git submodule update --init plbcom || return 1; }
 
     #*-----------------------------------------------------------------*
     #* Add the local bin folder to PATH and install any missing tools. *
