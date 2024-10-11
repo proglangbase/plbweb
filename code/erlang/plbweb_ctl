@@ -4,6 +4,7 @@
 
 main([Cmd]) ->
   make:all([{emake, ['../../plbcom/code/erlang/plb*', '*']}]),
+  c:l(plb_com),
   try 
     plb_ctl:init(?THIS_NODE),
     case list_to_atom(string:lowercase(Cmd)) of
@@ -22,27 +23,27 @@ main([Cmd]) ->
 main(_) -> io:format("usage:~n", []).
 
 start() ->
-  case plb_ctl:start_node(?A_WEB_NODE_NAME, ?A_WEB_NODE_COOKIE) of
+  case plb_ctl:start_node(?WEB_NODE_NAME, ?WEB_NODE_COOKIE) of
     already_running ->
       plb_ctl:report(?WEB_NODE_SNAME ++ " already running");
     ok ->
-      plb_ctl:rpc(?A_WEB_NODE_NAME, plbweb, acquire, []),
+      plb_ctl:rpc(?WEB_NODE_NAME, plbweb, acquire, []),
       status()
   end.
 
 stop() ->
-  plb_ctl:stop_node(?A_WEB_NODE_NAME, ?A_WEB_NODE_COOKIE),
+  plb_ctl:stop_node(?WEB_NODE_NAME, ?WEB_NODE_COOKIE),
   status().
 
 restart() ->
-  case plb_ctl:is_node_running(?A_WEB_NODE_NAME) of 
+  case plb_ctl:is_node_running(?WEB_NODE_NAME) of 
     true -> stop(); 
     _ -> ok 
   end,
   start().
 
 status() ->
-  case plb_ctl:is_node_running(?A_WEB_NODE_NAME) of 
+  case plb_ctl:is_node_running(?WEB_NODE_NAME) of 
     true  -> plb_ctl:report(?WEB_NODE_SNAME ++ " is running");
     false -> plb_ctl:report(?WEB_NODE_SNAME ++ " not running") 
   end.

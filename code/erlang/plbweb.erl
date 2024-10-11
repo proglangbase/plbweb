@@ -9,36 +9,30 @@
 -export([acquire/0, monitor/1, start/2]).
 -include("../../plbcom/code/erlang/config.hrl").
 
--define(MODULE_PATH         , filename:dirname(proplists:get_value(source, module_info(compile)))).
-%-define(NAME_SINGLETON      , list_to_atom(?MODULE_STRING++"_single")).
--define(NAME_SINGLETON      , list_to_atom(?WEB_SERVICE_NAME)).
--define(HTTPD_ADDR_LOCAL    , "localhost"                 ).
--define(HTTPD_PORT_LOCAL    , 8088                        ).
--define(HTTPD_PORT_PUBLIC   , 4433                        ).
--define(HTTPD_SERVER_ROOT   , ?MODULE_PATH++"/../.."      ).
--define(HTTPD_DOCUMENT_ROOT , ?MODULE_PATH++"/."          ).
--define(PATH_CERT           , ?HTTPD_SERVER_ROOT++"/cert" ).
--define(PATH_LOG            , "log"                       ).
--define(FILE_CERT           , ?PATH_CERT++"/fullchain.pem").
--define(FILE_KEY            , ?PATH_CERT++"/privkey.pem"  ).
+-define(SERVICE_NAME,        ?WEB_SERVICE_NAME).
+-define(HTTPD_ADDR_LOCAL,    "localhost").
+-define(HTTPD_PORT_LOCAL,    8088).
+-define(HTTPD_PORT_PUBLIC,   4433).
+-define(HTTPD_SERVER_ROOT,   ?MODULE_PATH++"/../..").
+-define(HTTPD_DOCUMENT_ROOT, ?MODULE_PATH++"/.").
+-define(PATH_CERT,           ?HTTPD_SERVER_ROOT++"/cert").
+-define(PATH_LOG,            "log").
+-define(FILE_CERT,           ?PATH_CERT++"/fullchain.pem").
+-define(FILE_KEY,            ?PATH_CERT++"/privkey.pem").
 
 acquire() ->
-  case whereis(?NAME_SINGLETON) of
+  case whereis(?SERVICE_NAME) of
     Pid when is_pid(Pid) -> Pid;
     _ -> create(local)
   end.
 
 create(Addr) ->
-  case whereis(?NAME_SINGLETON) of
+  case whereis(?SERVICE_NAME) of
     Pid when is_pid(Pid) -> {error,already_exists_at_pid,Pid};
-    %%_ -> spawn(?MODULE, init, [Addr])
-    _ -> init(Addr)
-  end.
-
-init(Addr) ->
-  case Addr of
-    local -> start(?HTTPD_ADDR_LOCAL, ?HTTPD_PORT_LOCAL );
-    _     -> start(Addr             , ?HTTPD_PORT_PUBLIC)
+    _ -> case Addr of
+      local -> start(?HTTPD_ADDR_LOCAL, ?HTTPD_PORT_LOCAL );
+      _     -> start(Addr             , ?HTTPD_PORT_PUBLIC)
+    end
   end.
 
 start(Addr, Port) ->
@@ -78,7 +72,7 @@ start(Addr, Port) ->
   spawn(?MODULE, monitor, [PidHttpd]).
 
 monitor(PidHttpd) ->
-  register(?NAME_SINGLETON, self()),
+  register(?SERVICE_NAME, self()),
   receive
     stop        -> inets:stop(httpd, PidHttpd), ok;
     stop_inets  -> inets:stop(), ok

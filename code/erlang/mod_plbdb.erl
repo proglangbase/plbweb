@@ -3,6 +3,7 @@
 %%
 -module(mod_plbdb).
 -export([do/1]).
+-include("../../plbcom/code/erlang/config.hrl").
 
 -record(mod,{init_data,
 	     data=[],
@@ -22,7 +23,7 @@ do(#mod{method="GET", request_uri="/favicon.ico"} = Info) ->
   {proceed, [{status, {204, Info#mod.request_uri, "Not Found"}}]};
 
 do(Info) -> 
-  case whereis(plbdb_single) of
+  case global:whereis_name(?DB_SERVICE_NAME) of
     Pid when is_pid(Pid) -> call_plbdb_html(Pid, Info#mod.request_uri);
     _ -> break_response(200, html([]))
   end.
