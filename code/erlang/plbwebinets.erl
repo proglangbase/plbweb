@@ -63,7 +63,7 @@ start(Addr, Port) ->
     ,{server_root   ,?HTTPD_SERVER_ROOT         }
     ,SocketType
     %%,{modules       ,[mod_log, plbinets]        }
-    ,{modules       ,[mod_plbdb, mod_log]       }
+    ,{modules       ,[plbwebinetsdb, mod_log]   }
     %% mod_log config:
     ,{error_log     ,?PATH_LOG++"/error.log"    }
     ,{security_log  ,?PATH_LOG++"/security.log" }

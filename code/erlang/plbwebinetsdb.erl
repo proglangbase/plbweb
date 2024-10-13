@@ -1,7 +1,7 @@
 %%
-%%  plbdb interface as a module loaded with inets.
+%%  inets module for requests that fetches from plbdb.
 %%
--module(mod_plbdb).
+-module(plbwebinetsdb).
 -export([do/1]).
 -include("../../dep/plbcom/code/erlang/config.hrl").
 
