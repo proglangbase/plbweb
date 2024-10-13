@@ -7,7 +7,7 @@
 main([Cmd]) ->
   make:all([{emake, [?COM_PATH ++ "/plb*", ?MODULE_PATH++"/*"]}]),
   c:l(plb_com),
-  try 
+  try
     plb_ctl:init(),
     case list_to_atom(string:lowercase(Cmd)) of
       start   -> start();
@@ -17,7 +17,7 @@ main([Cmd]) ->
       _       -> main([])
     end,
     halt(0)
-  catch 
+  catch
     {error,  Info} -> plb_ctl:report(io_lib:format("error: ~p", [Info])),     halt(1);
     {Source, Msg}  -> plb_ctl:report(io_lib:format("~p: ~s", [Source, Msg])), halt(1)
   end;
@@ -29,7 +29,7 @@ start() ->
     already_running ->
       plb_ctl:report(?WEB_NODE_SNAME ++ " already running");
     ok ->
-      plb_ctl:rpc(?WEB_NODE_NAME, plbweb, acquire, []),
+      plb_ctl:rpc(?WEB_NODE_NAME, plbwebinets, acquire, []),
       status()
   end.
 
@@ -38,14 +38,14 @@ stop() ->
   status().
 
 restart() ->
-  case plb_ctl:is_node_running(?WEB_NODE_NAME) of 
-    true -> stop(); 
-    _ -> ok 
+  case plb_ctl:is_node_running(?WEB_NODE_NAME) of
+    true -> stop();
+    _ -> ok
   end,
   start().
 
 status() ->
-  case plb_ctl:is_node_running(?WEB_NODE_NAME) of 
+  case plb_ctl:is_node_running(?WEB_NODE_NAME) of
     true  -> plb_ctl:report(?WEB_NODE_SNAME ++ " is running");
-    false -> plb_ctl:report(?WEB_NODE_SNAME ++ " not running") 
+    false -> plb_ctl:report(?WEB_NODE_SNAME ++ " not running")
   end.

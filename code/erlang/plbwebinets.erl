@@ -5,7 +5,7 @@
 %%  License, v. 2.0. If a copy of the MPL was not distributed with this
 %%  file, You can obtain one at http://mozilla.org/MPL/2.0/.
 %%
--module(plbweb).
+-module(plbwebinets).
 -export([acquire/0, monitor/1, start/2]).
 -include("../../dep/plbcom/code/erlang/config.hrl").
 
