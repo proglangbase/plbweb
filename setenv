@@ -37,7 +37,7 @@ if [ -n "$NOTOOLS" ]; then
 fi
 
 # if [ -n "$NOCOMMON" ]; then
-#   PATH_COMBIN="$(pwd)/plbcom/bin/sh"
+#   PATH_COMBIN="$(pwd)/dep/plbcom/bin/sh"
 #   [ "${PATH#*":$PATH_COMBIN"}" = "$PATH" ] && PATH="$PATH:$PATH_COMBIN"
 # fi
 
@@ -56,14 +56,14 @@ if ! find_deps; then
     #* Clone plbcom, if necessary.      *
     #* Common bin should then be found. *
     #*----------------------------------*
-    [ ! -d "plbcom/.git" ] && { git submodule update --init plbcom || return 1; }
+    [ ! -d "dep/plbcom/.git" ] && { git submodule update --init dep/plbcom || return 1; }
 
     #*-----------------------------------------------------------------*
     #* Add the local bin folder to PATH and install any missing tools. *
     #*-----------------------------------------------------------------*
     if [ -n "$NOTOOLS" ]; then
       export PATH_EXE PATH_BIN PATH
-      [ -z "$(command -v erl)" ] && ./plbcom/code/sh/build-erlang-otp
+      [ -z "$(command -v erl)" ] && ./dep/plbcom/code/sh/build-erlang-otp
     fi
 
   #*----------------------------------------------*

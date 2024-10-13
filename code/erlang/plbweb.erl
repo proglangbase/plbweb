@@ -7,7 +7,7 @@
 %%
 -module(plbweb).
 -export([acquire/0, monitor/1, start/2]).
--include("../../plbcom/code/erlang/config.hrl").
+-include("../../dep/plbcom/code/erlang/config.hrl").
 
 -define(SERVICE_NAME,        ?WEB_SERVICE_NAME).
 -define(HTTPD_ADDR_LOCAL,    "localhost").

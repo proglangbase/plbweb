@@ -2,5 +2,5 @@
 	path = mod/progintera
 	url = https://gitlab.com/progintera/progintera
 [submodule "plbcom"]
-	path = plbcom
+	path = dep/plbcom
 	url = git@gitlab.com:proglangbase/plbcom.git

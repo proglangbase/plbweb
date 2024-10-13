@@ -3,7 +3,7 @@
 %%
 -module(mod_plbdb).
 -export([do/1]).
--include("../../plbcom/code/erlang/config.hrl").
+-include("../../dep/plbcom/code/erlang/config.hrl").
 
 -record(mod,{init_data,
 	     data=[],

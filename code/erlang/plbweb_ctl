@@ -1,8 +1,8 @@
 #!/usr/bin/env escript
 -mode(compile).
--include("../../plbcom/code/erlang/config.hrl").
+-include("../../dep/plbcom/code/erlang/config.hrl").
 
--define(COM_PATH, ?MODULE_PATH ++ "/../../plbcom/code/erlang").
+-define(COM_PATH, ?MODULE_PATH ++ "/../../dep/plbcom/code/erlang").
 
 main([Cmd]) ->
   make:all([{emake, [?COM_PATH ++ "/plb*", ?MODULE_PATH++"/*"]}]),
