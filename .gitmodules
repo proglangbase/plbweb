@@ -1,5 +1,5 @@
 [submodule "mod/progintera"]
-	path = mod/progintera
+	path = dep/progintera
 	url = https://gitlab.com/progintera/progintera
 [submodule "plbcom"]
 	path = dep/plbcom
