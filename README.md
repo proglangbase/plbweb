@@ -2,19 +2,26 @@
 
 proglangbase website
 
+### Dependencies
+
+ - **Erlang/OTP** commands must be in PATH.
+ - **`dep/plbcom`** submodule must be loaded.
+
+### Commands
+
 *in a POSIX shell you can enter:*
 
+  - **`. a/setenv`**  
+    Verifies environment is set correctly and allows the user to install 
+    missing dependencies. Updates `PATH` to include installed commands.
 
-### `code/erlang/plbweb_ctl`  
   
-  - Used to start/stop the `plbweb` server. Builds any required out-of-date Erlang 
-    modules in the current folder and executes a command. Like a standard Linux 
-    service script, it supports `start`, `stop`, `restart`, and `status` commands.
+  - **`a/erlplbweb`**    
+    Starts/stops the `plbweb` node and service. Rebuilds service and dependency
+    `.beam` files. Like a standard Linux service script, it supports `start`, 
+    `stop`, `restart`, and `status` commands.
 
-  - Requires Erlang/OTP commands are found in PATH.
-  - `. ./setenv` will install Erlang/OTP and `plbcom` locally, if necessary,
-    and modify PATH accordingly.
-     
+
 ## Out of Date
 
 ### `./run`

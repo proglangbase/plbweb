@@ -5,3 +5,5 @@ cert/
 log/
 *.dump
 *.LOG.*
+# Works for folders and symlinks.
+_exe

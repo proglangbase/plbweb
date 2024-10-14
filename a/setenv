@@ -1,20 +1,21 @@
 #
 # Checks the environment to see it is property configured for running plbweb. 
-# Must be sourced from the  working directory (`. ./setenv`). If not, the user
-# may opt to install the necessary tools, locally.
+# Must be sourced from the working directory (`. a/setenv`). If dependencies
+# are missing, the user may opt to install them, locally.
 #
 # Output: 
 #   PATH_EXE - Target folder for locally installed tools.
 #   PATH_BIN - Target folder for links to local tool commands.
 #   PATH     - Modified to include local tool commands.
 #
-# Note: Cmds for adding common shell commands to bin folder are commented out
-#       for now. If we become sure we don't want it, they should be removed.
+# Note: We don't currently have any common shell scripts required in PATH so 
+#       that code is commented out, for now.
 #
 
 find_deps() {
   unset NOTOOLS NOCOMMON
-  [ -z "$(command -v erl)" ]               && NOTOOLS=1
+  [ -z "$(command -v erl)" ] && NOTOOLS=1
+  [ ! -e "dep/plbcom/.git" ] && NOCOMMON=1
   # (. plb_common 2>/dev/null); [ $? -ne 0 ] && NOCOMMON=1
   [ -z "$NOTOOLS$NOCOMMON" ] && return 0 || return 1
 }
@@ -46,8 +47,7 @@ fi
 #*------------------------------------------------*
 if ! find_deps; then
   echo 'This will configure the environment to run the PLB web server'
-  echo 'with Erlang/OTP and `plbcom` installed locally, if necessary.'
-  echo 'PATH will be modified to include the local commands.'
+  echo 'with dependencies installed locally, if necessary.'
   echo
   echo "Proceed (y/N)?"
   read REPLY
@@ -56,7 +56,7 @@ if ! find_deps; then
     #* Clone plbcom, if necessary.      *
     #* Common bin should then be found. *
     #*----------------------------------*
-    [ ! -d "dep/plbcom/.git" ] && { git submodule update --init dep/plbcom || return 1; }
+    [ -n "$NOCOMMON" ] && { git submodule update --init dep/plbcom || return 1; }
 
     #*-----------------------------------------------------------------*
     #* Add the local bin folder to PATH and install any missing tools. *
