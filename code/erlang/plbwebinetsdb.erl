@@ -3,27 +3,28 @@
 %%
 -module(plbwebinetsdb).
 -export([do/1]).
--include("../../dep/plbcom/code/erlang/config.hrl").
+-include("../../dep/plbcom/code/erlang/plbnames.hrl").
 
--record(mod,{init_data,
-	     data=[],
-	     socket_type=ip_comm,
-	     socket,
-	     config_db,
-	     method,
-	     absolute_uri=[],
-	     request_uri,
-	     http_version,
-	     request_line,
-	     parsed_header=[],
-	     entity_body,
-	     connection}).
+-record(mod,{
+  init_data,
+  data=[],
+  socket_type=ip_comm,
+  socket,
+  config_db,
+  method,
+  absolute_uri=[],
+  request_uri,
+  http_version,
+  request_line,
+  parsed_header=[],
+  entity_body,
+  connection}).
 
-do(#mod{method="GET", request_uri="/favicon.ico"} = Info) -> 
+do(#mod{method="GET", request_uri="/favicon.ico"} = Info) ->
   {proceed, [{status, {204, Info#mod.request_uri, "Not Found"}}]};
 
-do(Info) -> 
-  case global:whereis_name(?DB_SERVICE_NAME) of
+do(Info) ->
+  case global:whereis_name(?PLB_NAME_SERVICE_DB) of
     Pid when is_pid(Pid) -> call_plbdb_html(Pid, Info#mod.request_uri);
     _ -> break_response(200, html([]))
   end.

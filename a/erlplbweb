@@ -1,18 +1,19 @@
 #!/usr/bin/env escript
 %%
 %% PLB web service node controller.
-%% 
+%%
 %%   1) Change working directory to `code/erlang`.
 %%   2) Rebuild any out of date `.beam` files for the service and dependencies.
 %%   3) Process the command.
-%% 
+%%
 -mode(compile).
--include("../dep/plbcom/code/erlang/config.hrl").
+-include("../dep/plbcom/code/erlang/filename.hrl").
+-include("../dep/plbcom/code/erlang/plbnames.hrl").
 
 main([Cmd]) ->
-  CodePath = filename:absname(?MODULE_PATH ++ "/../code/erlang"),
-  ComPath  = filename:absname(?MODULE_PATH ++ "/../dep/plbcom/code/erlang"),
-  Modules  = [ ComPath++"/*", CodePath++"/*" ],
+  CodePath = filename:absname(?DIRNAME_MODULE++"/../code/erlang"),
+  ComPath  = filename:absname(?DIRNAME_MODULE++"/../dep/plbcom/code/erlang"),
+  Modules  = [ComPath++"/*", CodePath++"/*"],
   file:set_cwd(CodePath),
   make:all([{emake, Modules}]),
   c:l(plb_com),
@@ -31,32 +32,32 @@ main([Cmd]) ->
     {Source, Msg}  -> plb_ctl:report(io_lib:format("~p: ~s", [Source, Msg])), halt(1)
   end;
 
-main(_) -> 
-  io:format("usage: ~s {start|start_perl|stop|restart|status}~n", 
+main(_) ->
+  io:format("usage: ~s {start|stop|restart|status}~n",
             [filename:basename(escript:script_name())]).
 
 start() ->
-  case plb_ctl:start_node(?WEB_NODE_NAME, ?WEB_NODE_COOKIE) of
+  case plb_ctl:start_node(?PLB_NAME_NODE_WEB, ?PLB_COOKIE_NODE_WEB) of
     already_running ->
-      plb_ctl:report(?WEB_NODE_SNAME ++ " already running");
+      plb_ctl:report(?PLB_NAME_PREFIX_WEB++" already running");
     ok ->
-      plb_ctl:rpc(?WEB_NODE_NAME, plbwebinets, acquire,  []),
+      plb_ctl:rpc(?PLB_NAME_NODE_WEB, plbwebinets, acquire, []),
       status()
   end.
 
 stop() ->
-  plb_ctl:stop_node(?WEB_NODE_NAME, ?WEB_NODE_COOKIE),
+  plb_ctl:stop_node(?PLB_NAME_NODE_WEB, ?PLB_COOKIE_NODE_WEB),
   status().
 
 restart() ->
-  case plb_ctl:is_node_running(?WEB_NODE_NAME) of
+  case plb_ctl:is_node_running(?PLB_NAME_NODE_WEB) of
     true -> stop();
     _ -> ok
   end,
   start().
 
 status() ->
-  case plb_ctl:is_node_running(?WEB_NODE_NAME) of
-    true  -> plb_ctl:report(?WEB_NODE_SNAME ++ " is running");
-    false -> plb_ctl:report(?WEB_NODE_SNAME ++ " not running")
+  case plb_ctl:is_node_running(?PLB_NAME_NODE_WEB) of
+    true  -> plb_ctl:report(?PLB_NAME_PREFIX_WEB++" is running");
+    false -> plb_ctl:report(?PLB_NAME_PREFIX_WEB++" not running")
   end.

@@ -7,14 +7,15 @@
 %%
 -module(plbwebinets).
 -export([acquire/0, monitor/1, start/2]).
--include("../../dep/plbcom/code/erlang/config.hrl").
+-include("../../dep/plbcom/code/erlang/filename.hrl").
+-include("../../dep/plbcom/code/erlang/plbnames.hrl").
 
--define(SERVICE_NAME,        ?WEB_SERVICE_NAME).
+-define(SERVICE_NAME,        ?PLB_NAME_SERVICE_WEB).
 -define(HTTPD_ADDR_LOCAL,    "localhost").
 -define(HTTPD_PORT_LOCAL,    8088).
 -define(HTTPD_PORT_PUBLIC,   4433).
--define(HTTPD_SERVER_ROOT,   ?SOURCE_PATH++"/../..").
--define(HTTPD_DOCUMENT_ROOT, ?SOURCE_PATH++"/.").
+-define(HTTPD_SERVER_ROOT,   ?DIRNAME_SOURCE++"/../..").
+-define(HTTPD_DOCUMENT_ROOT, ?DIRNAME_SOURCE++"/.").
 -define(PATH_CERT,           ?HTTPD_SERVER_ROOT++"/cert").
 -define(PATH_LOG,            "log").
 -define(FILE_CERT,           ?PATH_CERT++"/fullchain.pem").
